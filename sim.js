@@ -3,7 +3,6 @@ const els = {
   playPauseBtn: document.getElementById('playPauseBtn'),
   resetBtn: document.getElementById('resetBtn'),
   defaultPresetBtn: document.getElementById('defaultPresetBtn'),
-  nearThresholdPresetBtn: document.getElementById('nearThresholdPresetBtn'),
   g: document.getElementById('g'),
   gNumber: document.getElementById('gNumber'),
   kappa1: document.getElementById('kappa1'),
@@ -50,30 +49,17 @@ const pairs = [
   ['substeps', 'substepsNumber']
 ];
 
-function setPreset(name) {
-  if (name === 'default') {
-    els.g.value = els.gNumber.value = '1.0';
-    els.kappa1.value = els.kappa1Number.value = '5.0';
-    els.kappa2.value = els.kappa2Number.value = '0.5';
-    els.L.value = els.LNumber.value = '200';
-    els.N.value = els.NNumber.value = '2000';
-    els.dt.value = els.dtNumber.value = '0.02';
-    els.A.value = els.ANumber.value = '4.0';
-    els.sigma.value = els.sigmaNumber.value = '3.0';
-    els.substeps.value = els.substepsNumber.value = '2';
-    els.viewMode.value = 'both';
-  } else {
-    els.g.value = els.gNumber.value = '1.0';
-    els.kappa1.value = els.kappa1Number.value = '5.0';
-    els.kappa2.value = els.kappa2Number.value = '0.5';
-    els.L.value = els.LNumber.value = '200';
-    els.N.value = els.NNumber.value = '2000';
-    els.dt.value = els.dtNumber.value = '0.02';
-    els.A.value = els.ANumber.value = '4.2';
-    els.sigma.value = els.sigmaNumber.value = '4.0';
-    els.substeps.value = els.substepsNumber.value = '2';
-    els.viewMode.value = 'both';
-  }
+function setPreset() {
+  els.g.value = els.gNumber.value = '1.0';
+  els.kappa1.value = els.kappa1Number.value = '5.0';
+  els.kappa2.value = els.kappa2Number.value = '0.5';
+  els.L.value = els.LNumber.value = '200';
+  els.N.value = els.NNumber.value = '2000';
+  els.dt.value = els.dtNumber.value = '0.01';
+  els.A.value = els.ANumber.value = '4.0';
+  els.sigma.value = els.sigmaNumber.value = '3.0';
+  els.substeps.value = els.substepsNumber.value = '20';
+  els.viewMode.value = 'both';
 }
 
 function params() {
@@ -380,18 +366,13 @@ els.resetBtn.addEventListener('click', () => {
 });
 
 els.defaultPresetBtn.addEventListener('click', () => {
-  setPreset('default');
-  reinitialize();
-});
-
-els.nearThresholdPresetBtn.addEventListener('click', () => {
-  setPreset('near');
+  setPreset();
   reinitialize();
 });
 
 pairs.forEach(([rangeId, numberId]) => bindPair(rangeId, numberId));
 els.viewMode.addEventListener('input', reinitialize);
 
-setPreset('default');
+setPreset();
 initialize();
 tick();
