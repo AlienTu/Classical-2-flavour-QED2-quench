@@ -28,8 +28,39 @@ h1 {
 .subtitle {
   margin: 0 0 18px 0;
   color: #475569;
-  line-height: 1.6;
+  line-height: 1.7;
   font-size: 14px;
+}
+.inline-math {
+  font-family: "STIX Two Math", "Cambria Math", "Times New Roman", serif;
+  color: #0f172a;
+}
+.formula-box,
+.status,
+.notes {
+  margin-top: 18px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  padding: 14px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.formula-box {
+  background: #f8fafc;
+}
+.formula-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.formula-line {
+  font-family: "STIX Two Math", "Cambria Math", "Times New Roman", serif;
+  font-size: 18px;
+  line-height: 1.8;
+  color: #111827;
+  margin: 6px 0;
+  word-break: break-word;
 }
 .controls { display: grid; gap: 12px; }
 .row.buttons {
@@ -88,15 +119,6 @@ input[type="number"], select {
   background: #fff;
   color: #0f172a;
 }
-.status, .notes {
-  margin-top: 18px;
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-  padding: 14px;
-  font-size: 14px;
-  line-height: 1.7;
-}
 .notes { color: #475569; }
 canvas {
   display: block;
@@ -118,5 +140,8 @@ code {
   .param-grid-header,
   .control.triple {
     grid-template-columns: 1fr;
+  }
+  .formula-line {
+    font-size: 16px;
   }
 }
