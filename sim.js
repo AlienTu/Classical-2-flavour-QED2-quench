@@ -207,6 +207,18 @@ function maxAbs(arr) {
   return m;
 }
 
+function minValue(arr) {
+  let m = Infinity;
+  for (let i = 0; i < arr.length; i++) m = Math.min(m, arr[i]);
+  return m;
+}
+
+function maxValue(arr) {
+  let m = -Infinity;
+  for (let i = 0; i < arr.length; i++) m = Math.max(m, arr[i]);
+  return m;
+}
+
 function energyDensity() {
   const n = sim.phiC.length;
   const ed = new Float64Array(n);
@@ -242,13 +254,15 @@ function updateReadout(message) {
 }
 
 function yBounds(mode) {
-  const currentMax = mode === 'phi_c'
-    ? maxAbs(sim.phiC)
-    : mode === 'phi_s'
-      ? maxAbs(sim.phiS)
-      : Math.max(maxAbs(sim.phiC), maxAbs(sim.phiS));
-  const displayMax = Math.max(1.15 * currentMax, 1.25 * DELTA, 0.6);
-  return { ymin: -displayMax, ymax: displayMax };
+  const arr = mode === 'phi_c' ? sim.phiC : sim.phiS;
+  const yminRaw = minValue(arr);
+  const ymaxRaw = maxValue(arr);
+  const span = Math.max(ymaxRaw - yminRaw, 0.25 * DELTA, 0.2);
+  const pad = 0.12 * span + 0.05 * DELTA;
+  return {
+    ymin: yminRaw - pad,
+    ymax: ymaxRaw + pad
+  };
 }
 
 function drawAxes(x0, y0, w, h, ymin, ymax, title) {
@@ -260,14 +274,15 @@ function drawAxes(x0, y0, w, h, ymin, ymax, title) {
   ctx.fillText(title, x0, y0 - 10);
   ctx.fillStyle = '#475569';
   ctx.font = '12px sans-serif';
-  ctx.fillText(ymax.toFixed(1), 8, y0 + 12);
-  ctx.fillText(ymin.toFixed(1), 8, y0 + h);
+  ctx.fillText(ymax.toFixed(2), 8, y0 + 12);
+  ctx.fillText(ymin.toFixed(2), 8, y0 + h);
   ctx.fillText((-sim.L / 2).toFixed(0), x0 - 4, y0 + h + 18);
   ctx.fillText((sim.L / 2).toFixed(0), x0 + w - 26, y0 + h + 18);
 
-  for (let n = -6; n <= 6; n++) {
+  const nMin = Math.ceil(ymin / DELTA);
+  const nMax = Math.floor(ymax / DELTA);
+  for (let n = nMin; n <= nMax; n++) {
     const yVal = n * DELTA;
-    if (yVal < ymin || yVal > ymax) continue;
     const yy = y0 + h - ((yVal - ymin) / (ymax - ymin)) * h;
     ctx.setLineDash([6, 6]);
     ctx.strokeStyle = '#94a3b8';
