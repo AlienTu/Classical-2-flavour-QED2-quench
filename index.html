@@ -10,10 +10,8 @@
   <div class="page">
     <aside class="sidebar">
       <h1>Classical 2-flavour QED2</h1>
-      <p class="subtitle">Browser demo for the classical two-field quench with periodic boundary conditions. The displayed fields are the flavour combinations 
-      <span class="inline-math">&phi;<sub>c</sub> = (&phi;<sub>1</sub> + &phi;<sub>2</sub>)/&radic;2</span> and 
-      <span class="inline-math">&phi;<sub>s</sub> = (&phi;<sub>1</sub> - &phi;<sub>2</sub>)/&radic;2</span>,
-      so <span class="inline-math">&phi;<sub>c</sub></span> and <span class="inline-math">&phi;<sub>s</sub></span> are the symmetric and antisymmetric superpositions of flavour 1 and flavour 2.</p>
+      <p class="subtitle">Classical real-time simulation of the bosonized 1+1D 2-flavour QED with closed boundary condition. One may interpret flavour 1 as proton and flavour 2 as electron. The quench is used to test whether a vacuum disturbance can nucleate hydrogen-like objects in a 1+1D universe.</p>
+      <p class="subtitle">The displayed fields are <span class="inline-math">&phi;<sub>c</sub> = (&phi;<sub>1</sub> + &phi;<sub>2</sub>)/&radic;2</span> and <span class="inline-math">&phi;<sub>s</sub> = (&phi;<sub>1</sub> - &phi;<sub>2</sub>)/&radic;2</span>, namely the symmetric and antisymmetric combinations of the two flavour fields. Positive and negative hydrogen are represented by kink and antikink configurations of <span class="inline-math">&phi;<sub>s</sub></span>. The default quench is a local Gaussian momentum kick in flavour 1, which in the <span class="inline-math">(&phi;<sub>c</sub>,&phi;<sub>s</sub>)</span> basis is implemented by <span class="inline-math">&part;<sub>t</sub>&phi;<sub>c</sub>(x,0)=&part;<sub>t</sub>&phi;<sub>s</sub>(x,0)=A exp[-(x/&sigma;)^2]</span>.</p>
 
       <div class="formula-box">
         <div class="formula-title">equations of motion</div>
@@ -102,7 +100,7 @@
       </div>
 
       <div class="notes">
-        Dashed lines mark <span class="inline-math">n&radic;(2&pi;)</span> for integer <span class="inline-math">n</span>. The vertical range and the reference lines are now chosen from the current actual minimum and maximum of the plotted field, so the plot only rescales when the set of involved <span class="inline-math">n&radic;(2&pi;)</span> lines changes. If your browser still shows the old behavior, do one hard refresh.
+        Dashed lines mark topological sectors <span class="inline-math">n&radic;(2&pi;)</span>.
       </div>
     </aside>
 
