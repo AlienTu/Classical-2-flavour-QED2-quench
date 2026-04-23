@@ -1,6 +1,8 @@
 # Classical 2-flavour QED2 quench
 
-Browser simulator for the classical two-field quench model.
+This repository contains a browser simulator for the classical time evolution of the bosonized version of 1+1D 2-flavour QED with closed boundary condition.
+
+One may interpret flavour 1 as proton and flavour 2 as electron. The purpose of the quench is to test whether a 1+1D universe can nucleate hydrogen-like objects from a vacuum disturbance. In this language, positive and negative hydrogen are represented by the kink and antikink structure of phi_s.
 
 ## Physical model
 
@@ -11,41 +13,25 @@ phi_c = (phi_1 + phi_2) / sqrt(2),
 phi_s = (phi_1 - phi_2) / sqrt(2).
 ```
 
-So `phi_c` and `phi_s` are the symmetric and antisymmetric superpositions of flavour 1 and flavour 2.
-
 The classical equations of motion are
 
 ```text
 ∂t² phi_c - ∂x² phi_c + g² phi_c
-+ (α/2) kappa1 sin[α (phi_c + phi_s)]
-+ (α/2) kappa2 sin[α (phi_c - phi_s)] = 0,
++ (sqrt(2π)/2) kappa1 sin[sqrt(2π) (phi_c + phi_s)]
++ (sqrt(2π)/2) kappa2 sin[sqrt(2π) (phi_c - phi_s)] = 0,
 
 ∂t² phi_s - ∂x² phi_s
-+ (α/2) kappa1 sin[α (phi_c + phi_s)]
-- (α/2) kappa2 sin[α (phi_c - phi_s)] = 0,
++ (sqrt(2π)/2) kappa1 sin[sqrt(2π) (phi_c + phi_s)]
+- (sqrt(2π)/2) kappa2 sin[sqrt(2π) (phi_c - phi_s)] = 0,
 ```
 
-with
-
-```text
-α = sqrt(2π).
-```
-
-Equivalently, the potential energy density is
+and the potential energy density is
 
 ```text
 V(phi_c, phi_s) = 1/2 g² phi_c²
-                  - (kappa1/2) cos[α (phi_c + phi_s)]
-                  - (kappa2/2) cos[α (phi_c - phi_s)].
+                  - (kappa1/2) cos[sqrt(2π) (phi_c + phi_s)]
+                  - (kappa2/2) cos[sqrt(2π) (phi_c - phi_s)].
 ```
-
-The dashed horizontal guide lines in the plot mark
-
-```text
-phi = n sqrt(2π),   n ∈ Z,
-```
-
-which are useful for visually tracking when `phi_s` crosses neighboring topological sectors.
 
 ## Initial condition used in the browser demo
 
@@ -59,13 +45,13 @@ phi_s(x,0) = 0,
 ∂t phi_s(x,0) = A exp[-(x/sigma)²].
 ```
 
-So the browser demo starts from the vacuum field profile and injects a local Gaussian velocity kick into both fields.
+In the flavour basis this corresponds to a local Gaussian momentum kick in flavour 1, while flavour 2 starts from vacuum.
 
 ## Adjustable parameters
 
 - `g` — charge gap
-- `kappa1` — flavour-symmetric cosine coupling
-- `kappa2` — flavour-antisymmetric cosine coupling
+- `kappa1` — flavour-1 cosine coupling
+- `kappa2` — flavour-2 cosine coupling
 - `L` — box size
 - `N` — grid points
 - `dt` — time step
