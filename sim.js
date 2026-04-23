@@ -136,9 +136,7 @@ function initialize() {
     phiS,
     piC,
     piS,
-    t: 0,
-    maxAbsPhiC: 0,
-    maxAbsPhiS: 0
+    t: 0
   };
 
   updateReadout('initialized');
@@ -201,8 +199,6 @@ function stepLeapfrog() {
   sim.piC = piCNew;
   sim.piS = piSNew;
   sim.t += dt;
-  sim.maxAbsPhiC = Math.max(sim.maxAbsPhiC, maxAbs(phiCNew));
-  sim.maxAbsPhiS = Math.max(sim.maxAbsPhiS, maxAbs(phiSNew));
 }
 
 function maxAbs(arr) {
@@ -235,19 +231,24 @@ function totalEnergy(ed) {
 
 function updateReadout(message) {
   const ed = energyDensity();
+  const currentAbsPhiC = maxAbs(sim.phiC);
+  const currentAbsPhiS = maxAbs(sim.phiS);
   els.timeReadout.textContent = sim.t.toFixed(2);
   els.energyReadout.textContent = totalEnergy(ed).toFixed(4);
   els.dxReadout.textContent = sim.dx.toFixed(4);
-  els.phiCReadout.textContent = (sim.maxAbsPhiC / DELTA).toFixed(3);
-  els.phiSReadout.textContent = (sim.maxAbsPhiS / DELTA).toFixed(3);
+  els.phiCReadout.textContent = (currentAbsPhiC / DELTA).toFixed(3);
+  els.phiSReadout.textContent = (currentAbsPhiS / DELTA).toFixed(3);
   els.messageReadout.textContent = message;
 }
 
 function yBounds(mode) {
-  const maxField = Math.max(maxAbs(sim.phiC), maxAbs(sim.phiS), sim.maxAbsPhiC, sim.maxAbsPhiS, 2 * DELTA);
-  if (mode === 'phi_c') return { ymin: -maxField - 0.4, ymax: maxField + 0.4 };
-  if (mode === 'phi_s') return { ymin: -maxField - 0.4, ymax: maxField + 0.4 };
-  return { ymin: -maxField - 0.4, ymax: maxField + 0.4 };
+  const currentMax = mode === 'phi_c'
+    ? maxAbs(sim.phiC)
+    : mode === 'phi_s'
+      ? maxAbs(sim.phiS)
+      : Math.max(maxAbs(sim.phiC), maxAbs(sim.phiS));
+  const displayMax = Math.max(1.15 * currentMax, 1.25 * DELTA, 0.6);
+  return { ymin: -displayMax, ymax: displayMax };
 }
 
 function drawAxes(x0, y0, w, h, ymin, ymax, title) {
@@ -316,17 +317,18 @@ function draw() {
   const mode = sim.viewMode;
   const panels = mode === 'both' ? 2 : 1;
   const panelH = (els.canvas.height - 2 * pad - (panels - 1) * gap) / panels;
-  const bounds = yBounds(mode);
 
   if (mode === 'phi_c' || mode === 'both') {
-    drawAxes(pad, pad, plotW, panelH, bounds.ymin, bounds.ymax, 'phi_c(x,t)');
-    drawCurve(sim.phiC, pad, pad, plotW, panelH, bounds.ymin, bounds.ymax, '#2563eb');
+    const boundsC = yBounds('phi_c');
+    drawAxes(pad, pad, plotW, panelH, boundsC.ymin, boundsC.ymax, 'phi_c(x,t)');
+    drawCurve(sim.phiC, pad, pad, plotW, panelH, boundsC.ymin, boundsC.ymax, '#2563eb');
   }
 
   if (mode === 'phi_s' || mode === 'both') {
     const y0 = mode === 'both' ? pad + panelH + gap : pad;
-    drawAxes(pad, y0, plotW, panelH, bounds.ymin, bounds.ymax, 'phi_s(x,t)');
-    drawCurve(sim.phiS, pad, y0, plotW, panelH, bounds.ymin, bounds.ymax, '#dc2626');
+    const boundsS = yBounds('phi_s');
+    drawAxes(pad, y0, plotW, panelH, boundsS.ymin, boundsS.ymax, 'phi_s(x,t)');
+    drawCurve(sim.phiS, pad, y0, plotW, panelH, boundsS.ymin, boundsS.ymax, '#dc2626');
   }
 
   if (mode === 'both') {
