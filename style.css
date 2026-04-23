@@ -124,6 +124,7 @@ canvas {
   display: block;
   width: 100%;
   height: auto;
+  min-height: 420px;
   border-radius: 14px;
   background: #ffffff;
 }
@@ -135,13 +136,28 @@ code {
 }
 @media (max-width: 1200px) {
   .page { grid-template-columns: 1fr; }
+  .main { order: -1; }
 }
 @media (max-width: 640px) {
+  .page {
+    padding: 12px;
+    gap: 12px;
+  }
+  .main {
+    order: -1;
+    padding: 10px;
+  }
+  .sidebar {
+    padding: 14px;
+  }
   .param-grid-header,
   .control.triple {
     grid-template-columns: 1fr;
   }
   .formula-line {
     font-size: 16px;
+  }
+  canvas {
+    min-height: 360px;
   }
 }
