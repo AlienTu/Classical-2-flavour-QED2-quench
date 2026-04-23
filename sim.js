@@ -30,7 +30,15 @@ const els = {
   messageReadout: document.getElementById('messageReadout')
 };
 
+if (!els.canvas) {
+  throw new Error('simCanvas not found');
+}
+
 const ctx = els.canvas.getContext('2d');
+if (!ctx) {
+  throw new Error('2D canvas context not available');
+}
+
 const ALPHA = Math.sqrt(2 * Math.PI);
 const DELTA = Math.sqrt(2 * Math.PI);
 let sim = null;
@@ -48,6 +56,15 @@ const pairs = [
   ['sigma', 'sigmaNumber'],
   ['substeps', 'substepsNumber']
 ];
+
+function resizeCanvas() {
+  const displayWidth = Math.max(640, Math.floor(els.canvas.clientWidth || 1200));
+  const displayHeight = Math.max(420, Math.floor(els.canvas.clientHeight || 760));
+  if (els.canvas.width !== displayWidth || els.canvas.height !== displayHeight) {
+    els.canvas.width = displayWidth;
+    els.canvas.height = displayHeight;
+  }
+}
 
 function setPreset() {
   els.g.value = els.gNumber.value = '1.0';
@@ -68,11 +85,11 @@ function params() {
     kappa1: Number(els.kappa1Number.value),
     kappa2: Number(els.kappa2Number.value),
     L: Number(els.LNumber.value),
-    N: Math.round(Number(els.NNumber.value)),
+    N: Math.max(50, Math.round(Number(els.NNumber.value))),
     dt: Number(els.dtNumber.value),
     A: Number(els.ANumber.value),
     sigma: Number(els.sigmaNumber.value),
-    substeps: Math.round(Number(els.substepsNumber.value)),
+    substeps: Math.max(1, Math.round(Number(els.substepsNumber.value))),
     viewMode: els.viewMode.value
   };
 }
@@ -99,6 +116,7 @@ function reinitialize() {
 }
 
 function initialize() {
+  resizeCanvas();
   const p = params();
   const dx = p.L / p.N;
   const x = new Float64Array(p.N);
@@ -290,13 +308,20 @@ function drawCurve(arr, x0, y0, w, h, ymin, ymax, color) {
   ctx.strokeStyle = color;
   ctx.lineWidth = 2;
   ctx.beginPath();
+  let started = false;
   for (let i = 0; i < arr.length; i++) {
-    const xx = x0 + (i / (arr.length - 1)) * w;
-    const yy = y0 + h - ((arr[i] - ymin) / (ymax - ymin)) * h;
-    if (i === 0) ctx.moveTo(xx, yy);
-    else ctx.lineTo(xx, yy);
+    const value = arr[i];
+    if (!Number.isFinite(value)) continue;
+    const xx = x0 + (i / Math.max(1, arr.length - 1)) * w;
+    const yy = y0 + h - ((value - ymin) / (ymax - ymin)) * h;
+    if (!started) {
+      ctx.moveTo(xx, yy);
+      started = true;
+    } else {
+      ctx.lineTo(xx, yy);
+    }
   }
-  ctx.stroke();
+  if (started) ctx.stroke();
 }
 
 function drawLegend(entries, x, y) {
@@ -314,16 +339,17 @@ function drawLegend(entries, x, y) {
 }
 
 function draw() {
+  resizeCanvas();
   ctx.clearRect(0, 0, els.canvas.width, els.canvas.height);
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, els.canvas.width, els.canvas.height);
 
   const pad = 48;
   const gap = 28;
-  const plotW = els.canvas.width - 2 * pad;
+  const plotW = Math.max(100, els.canvas.width - 2 * pad);
   const mode = sim.viewMode;
   const panels = mode === 'both' ? 2 : 1;
-  const panelH = (els.canvas.height - 2 * pad - (panels - 1) * gap) / panels;
+  const panelH = Math.max(120, (els.canvas.height - 2 * pad - (panels - 1) * gap) / panels);
 
   if (mode === 'phi_c' || mode === 'both') {
     const boundsC = yBounds('phi_c');
@@ -342,7 +368,7 @@ function draw() {
     drawLegend([
       { color: '#2563eb', label: 'phi_c' },
       { color: '#dc2626', label: 'phi_s' }
-    ], els.canvas.width - 160, 32);
+    ], Math.max(pad, els.canvas.width - 160), 32);
   }
 }
 
@@ -372,6 +398,7 @@ els.defaultPresetBtn.addEventListener('click', () => {
 
 pairs.forEach(([rangeId, numberId]) => bindPair(rangeId, numberId));
 els.viewMode.addEventListener('input', reinitialize);
+window.addEventListener('resize', draw);
 
 setPreset();
 initialize();
