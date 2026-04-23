@@ -4,16 +4,25 @@ Browser simulator for the classical two-field quench model.
 
 ## Physical model
 
-The simulator evolves two real fields `phi_c(x,t)` and `phi_s(x,t)` with periodic boundary conditions. The classical equations of motion are
+The simulator evolves two real fields `phi_c(x,t)` and `phi_s(x,t)` with periodic boundary conditions. They are related to the flavour fields `phi_1` and `phi_2` by
+
+```text
+phi_c = (phi_1 + phi_2) / sqrt(2),
+phi_s = (phi_1 - phi_2) / sqrt(2).
+```
+
+So `phi_c` and `phi_s` are the symmetric and antisymmetric superpositions of flavour 1 and flavour 2.
+
+The classical equations of motion are
 
 ```text
 ∂t² phi_c - ∂x² phi_c + g² phi_c
-+ α kappa1 sin[α (phi_c + phi_s)]
-+ α kappa2 sin[α (phi_c - phi_s)] = 0,
++ (α/2) kappa1 sin[α (phi_c + phi_s)]
++ (α/2) kappa2 sin[α (phi_c - phi_s)] = 0,
 
 ∂t² phi_s - ∂x² phi_s
-+ α kappa1 sin[α (phi_c + phi_s)]
-- α kappa2 sin[α (phi_c - phi_s)] = 0,
++ (α/2) kappa1 sin[α (phi_c + phi_s)]
+- (α/2) kappa2 sin[α (phi_c - phi_s)] = 0,
 ```
 
 with
@@ -26,8 +35,8 @@ Equivalently, the potential energy density is
 
 ```text
 V(phi_c, phi_s) = 1/2 g² phi_c²
-                  - kappa1 cos[α (phi_c + phi_s)]
-                  - kappa2 cos[α (phi_c - phi_s)].
+                  - (kappa1/2) cos[α (phi_c + phi_s)]
+                  - (kappa2/2) cos[α (phi_c - phi_s)].
 ```
 
 The dashed horizontal guide lines in the plot mark
@@ -55,8 +64,8 @@ So the browser demo starts from the vacuum field profile and injects a local Gau
 ## Adjustable parameters
 
 - `g` — charge gap
-- `kappa1` — heavy cosine coupling
-- `kappa2` — light cosine coupling
+- `kappa1` — flavour-symmetric cosine coupling
+- `kappa2` — flavour-antisymmetric cosine coupling
 - `L` — box size
 - `N` — grid points
 - `dt` — time step
