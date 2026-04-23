@@ -10,15 +10,17 @@
   <div class="page">
     <aside class="sidebar">
       <h1>Classical 2-flavour QED2</h1>
-      <p class="subtitle">Browser demo for the classical two-field quench with periodic boundary conditions. Here <code>phi_c = (phi_1 + phi_2)/sqrt(2)</code> and <code>phi_s = (phi_1 - phi_2)/sqrt(2)</code>, so <code>phi_c</code> and <code>phi_s</code> are the symmetric and antisymmetric superpositions of flavour 1 and flavour 2.</p>
+      <p class="subtitle">Browser demo for the classical two-field quench with periodic boundary conditions. The displayed fields are the flavour combinations 
+      <span class="inline-math">&phi;<sub>c</sub> = (&phi;<sub>1</sub> + &phi;<sub>2</sub>)/&radic;2</span> and 
+      <span class="inline-math">&phi;<sub>s</sub> = (&phi;<sub>1</sub> - &phi;<sub>2</sub>)/&radic;2</span>,
+      so <span class="inline-math">&phi;<sub>c</sub></span> and <span class="inline-math">&phi;<sub>s</sub></span> are the symmetric and antisymmetric superpositions of flavour 1 and flavour 2.</p>
 
-      <div class="status">
-        <div><strong>equations of motion</strong></div>
-        <div><code>∂t² phi_c - ∂x² phi_c + g² phi_c + (alpha/2) kappa1 sin[alpha(phi_c+phi_s)] + (alpha/2) kappa2 sin[alpha(phi_c-phi_s)] = 0</code></div>
-        <div><code>∂t² phi_s - ∂x² phi_s + (alpha/2) kappa1 sin[alpha(phi_c+phi_s)] - (alpha/2) kappa2 sin[alpha(phi_c-phi_s)] = 0</code></div>
-        <div><code>V(phi_c,phi_s) = 1/2 g² phi_c² - (kappa1/2) cos[alpha(phi_c+phi_s)] - (kappa2/2) cos[alpha(phi_c-phi_s)]</code></div>
-        <div><code>alpha = sqrt(2pi)</code></div>
-        <div><code>phi_c(x,0)=phi_s(x,0)=0</code>, <code>∂t phi_c(x,0)=∂t phi_s(x,0)=A exp[-(x/sigma)^2]</code></div>
+      <div class="formula-box">
+        <div class="formula-title">equations of motion</div>
+        <div class="formula-line">&part;<sub>t</sub><sup>2</sup>&phi;<sub>c</sub> - &part;<sub>x</sub><sup>2</sup>&phi;<sub>c</sub> + g<sup>2</sup>&phi;<sub>c</sub> + <span class="inline-math">(&radic;(2&pi;)/2)&kappa;<sub>1</sub> sin[&radic;(2&pi;)(&phi;<sub>c</sub>+&phi;<sub>s</sub>)]</span> + <span class="inline-math">(&radic;(2&pi;)/2)&kappa;<sub>2</sub> sin[&radic;(2&pi;)(&phi;<sub>c</sub>-&phi;<sub>s</sub>)]</span> = 0</div>
+        <div class="formula-line">&part;<sub>t</sub><sup>2</sup>&phi;<sub>s</sub> - &part;<sub>x</sub><sup>2</sup>&phi;<sub>s</sub> + <span class="inline-math">(&radic;(2&pi;)/2)&kappa;<sub>1</sub> sin[&radic;(2&pi;)(&phi;<sub>c</sub>+&phi;<sub>s</sub>)]</span> - <span class="inline-math">(&radic;(2&pi;)/2)&kappa;<sub>2</sub> sin[&radic;(2&pi;)(&phi;<sub>c</sub>-&phi;<sub>s</sub>)]</span> = 0</div>
+        <div class="formula-line">V(&phi;<sub>c</sub>,&phi;<sub>s</sub>) = (1/2) g<sup>2</sup>&phi;<sub>c</sub><sup>2</sup> - (&kappa;<sub>1</sub>/2) cos[&radic;(2&pi;)(&phi;<sub>c</sub>+&phi;<sub>s</sub>)] - (&kappa;<sub>2</sub>/2) cos[&radic;(2&pi;)(&phi;<sub>c</sub>-&phi;<sub>s</sub>)]</div>
+        <div class="formula-line">&phi;<sub>c</sub>(x,0)=&phi;<sub>s</sub>(x,0)=0,&nbsp;&nbsp; &part;<sub>t</sub>&phi;<sub>c</sub>(x,0)=&part;<sub>t</sub>&phi;<sub>s</sub>(x,0)=A exp[-(x/&sigma;)<sup>2</sup>]</div>
       </div>
 
       <div class="controls">
@@ -39,12 +41,12 @@
           <input id="gNumber" type="number" min="0.2" max="4.0" step="0.05" value="1.0" />
         </div>
         <div class="control triple">
-          <label for="kappa1">kappa1 <small>flavour-symmetric cosine coupling</small></label>
+          <label for="kappa1">&kappa;<sub>1</sub> <small>flavour-symmetric cosine coupling</small></label>
           <input id="kappa1" type="range" min="0.2" max="8.0" step="0.1" value="5.0" />
           <input id="kappa1Number" type="number" min="0.2" max="8.0" step="0.1" value="5.0" />
         </div>
         <div class="control triple">
-          <label for="kappa2">kappa2 <small>flavour-antisymmetric cosine coupling</small></label>
+          <label for="kappa2">&kappa;<sub>2</sub> <small>flavour-antisymmetric cosine coupling</small></label>
           <input id="kappa2" type="range" min="0.1" max="3.0" step="0.05" value="0.5" />
           <input id="kappa2Number" type="number" min="0.1" max="3.0" step="0.05" value="0.5" />
         </div>
@@ -69,7 +71,7 @@
           <input id="ANumber" type="number" min="0" max="8" step="0.1" value="4.0" />
         </div>
         <div class="control triple">
-          <label for="sigma">sigma <small>Gaussian kick width</small></label>
+          <label for="sigma">&sigma; <small>Gaussian kick width</small></label>
           <input id="sigma" type="range" min="0.5" max="12" step="0.1" value="4.0" />
           <input id="sigmaNumber" type="number" min="0.5" max="12" step="0.1" value="4.0" />
         </div>
@@ -83,9 +85,9 @@
         <div class="control single">
           <label for="viewMode">view <small>plot mode</small></label>
           <select id="viewMode">
-            <option value="both">phi_c + phi_s</option>
-            <option value="phi_c">only phi_c</option>
-            <option value="phi_s">only phi_s</option>
+            <option value="both">&phi;<sub>c</sub> + &phi;<sub>s</sub></option>
+            <option value="phi_c">only &phi;<sub>c</sub></option>
+            <option value="phi_s">only &phi;<sub>s</sub></option>
           </select>
         </div>
       </div>
@@ -94,13 +96,13 @@
         <div><strong>time:</strong> <span id="timeReadout">0.00</span></div>
         <div><strong>energy:</strong> <span id="energyReadout">0.0000</span></div>
         <div><strong>dx:</strong> <span id="dxReadout">0.0000</span></div>
-        <div><strong>max |phi_c| / sqrt(2pi):</strong> <span id="phiCReadout">0.000</span></div>
-        <div><strong>max |phi_s| / sqrt(2pi):</strong> <span id="phiSReadout">0.000</span></div>
+        <div><strong>current |&phi;<sub>c</sub>| / &radic;(2&pi;):</strong> <span id="phiCReadout">0.000</span></div>
+        <div><strong>current |&phi;<sub>s</sub>| / &radic;(2&pi;):</strong> <span id="phiSReadout">0.000</span></div>
         <div><strong>message:</strong> <span id="messageReadout">initialized</span></div>
       </div>
 
       <div class="notes">
-        Dashed lines mark <code>n sqrt(2pi)</code> for integer <code>n</code>. All listed parameters can be adjusted either by dragging the slider or by typing directly into the number box.
+        Dashed lines mark <span class="inline-math">n&radic;(2&pi;)</span> for integer <span class="inline-math">n</span>. The vertical range now follows the current field amplitude, so if the fields rise and then relax, the plot rescales with them. If your browser still shows the old code-style equations, do one hard refresh.
       </div>
     </aside>
 
