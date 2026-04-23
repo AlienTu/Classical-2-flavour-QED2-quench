@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Classical 2-flavour QED2 quench simulator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <aside class="sidebar">
+      <h1>Classical 2-flavour QED2</h1>
+      <p class="subtitle">Browser demo for the classical two-field quench with periodic boundary conditions. Initial data are <code>phi_c = phi_s = 0</code> and <code>dot phi_c = dot phi_s = A exp(-(x/sigma)^2)</code>.</p>
+
+      <div class="controls">
+        <div class="row buttons">
+          <button id="playPauseBtn">Play</button>
+          <button id="resetBtn" class="secondary">Reset</button>
+        </div>
+        <div class="row buttons">
+          <button id="defaultPresetBtn" class="success">Default preset</button>
+          <button id="nearThresholdPresetBtn" class="warning">Near-threshold preset</button>
+        </div>
+
+        <div class="param-grid-header"><span>Parameter</span><span>Slider</span><span>Input</span></div>
+
+        <div class="control triple">
+          <label for="g">g <small>charge gap</small></label>
+          <input id="g" type="range" min="0.2" max="4.0" step="0.05" value="1.0" />
+          <input id="gNumber" type="number" min="0.2" max="4.0" step="0.05" value="1.0" />
+        </div>
+        <div class="control triple">
+          <label for="kappa1">kappa1 <small>heavy cosine coupling</small></label>
+          <input id="kappa1" type="range" min="0.2" max="8.0" step="0.1" value="5.0" />
+          <input id="kappa1Number" type="number" min="0.2" max="8.0" step="0.1" value="5.0" />
+        </div>
+        <div class="control triple">
+          <label for="kappa2">kappa2 <small>light cosine coupling</small></label>
+          <input id="kappa2" type="range" min="0.1" max="3.0" step="0.05" value="0.5" />
+          <input id="kappa2Number" type="number" min="0.1" max="3.0" step="0.05" value="0.5" />
+        </div>
+        <div class="control triple">
+          <label for="L">L <small>box size</small></label>
+          <input id="L" type="range" min="40" max="300" step="10" value="200" />
+          <input id="LNumber" type="number" min="40" max="300" step="10" value="200" />
+        </div>
+        <div class="control triple">
+          <label for="N">N <small>grid points</small></label>
+          <input id="N" type="range" min="200" max="2400" step="100" value="2000" />
+          <input id="NNumber" type="number" min="200" max="2400" step="100" value="2000" />
+        </div>
+        <div class="control triple">
+          <label for="dt">dt <small>time step</small></label>
+          <input id="dt" type="range" min="0.002" max="0.04" step="0.002" value="0.02" />
+          <input id="dtNumber" type="number" min="0.002" max="0.04" step="0.002" value="0.02" />
+        </div>
+        <div class="control triple">
+          <label for="A">A <small>Gaussian kick amplitude</small></label>
+          <input id="A" type="range" min="0" max="8" step="0.1" value="4.0" />
+          <input id="ANumber" type="number" min="0" max="8" step="0.1" value="4.0" />
+        </div>
+        <div class="control triple">
+          <label for="sigma">sigma <small>Gaussian kick width</small></label>
+          <input id="sigma" type="range" min="0.5" max="12" step="0.1" value="4.0" />
+          <input id="sigmaNumber" type="number" min="0.5" max="12" step="0.1" value="4.0" />
+        </div>
+
+        <div class="control triple">
+          <label for="substeps">substeps <small>steps per frame</small></label>
+          <input id="substeps" type="range" min="1" max="12" step="1" value="2" />
+          <input id="substepsNumber" type="number" min="1" max="12" step="1" value="2" />
+        </div>
+
+        <div class="control single">
+          <label for="viewMode">view <small>plot mode</small></label>
+          <select id="viewMode">
+            <option value="both">phi_c + phi_s</option>
+            <option value="phi_c">only phi_c</option>
+            <option value="phi_s">only phi_s</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="status">
+        <div><strong>time:</strong> <span id="timeReadout">0.00</span></div>
+        <div><strong>energy:</strong> <span id="energyReadout">0.0000</span></div>
+        <div><strong>dx:</strong> <span id="dxReadout">0.0000</span></div>
+        <div><strong>max |phi_c| / sqrt(2pi):</strong> <span id="phiCReadout">0.000</span></div>
+        <div><strong>max |phi_s| / sqrt(2pi):</strong> <span id="phiSReadout">0.000</span></div>
+        <div><strong>message:</strong> <span id="messageReadout">initialized</span></div>
+      </div>
+
+      <div class="notes">
+        Dashed lines mark <code>n sqrt(2pi)</code> for integer <code>n</code>. All listed parameters can be adjusted either by dragging the slider or by typing directly into the number box.
+      </div>
+    </aside>
+
+    <main class="main">
+      <canvas id="simCanvas" width="1200" height="760"></canvas>
+    </main>
+  </div>
+
+  <script src="sim.js"></script>
+</body>
+</html>
