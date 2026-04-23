@@ -5,20 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Classical 2-flavour QED2 quench simulator</title>
   <link rel="stylesheet" href="style.css" />
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(','\\)']],
+        displayMath: [['\\[','\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 </head>
 <body>
   <div class="page">
     <aside class="sidebar">
       <h1>Classical 2-flavour QED2</h1>
       <p class="subtitle">Classical real-time simulation of the bosonized 1+1D 2-flavour QED with closed boundary condition. One may interpret flavour 1 as proton and flavour 2 as electron. The quench is used to test whether a vacuum disturbance can nucleate hydrogen-like objects in a 1+1D universe.</p>
-      <p class="subtitle">The displayed fields are <span class="inline-math">&phi;<sub>c</sub> = (&phi;<sub>1</sub> + &phi;<sub>2</sub>)/&radic;2</span> and <span class="inline-math">&phi;<sub>s</sub> = (&phi;<sub>1</sub> - &phi;<sub>2</sub>)/&radic;2</span>, namely the symmetric and antisymmetric combinations of the two flavour fields. Positive and negative hydrogen are represented by kink and antikink configurations of <span class="inline-math">&phi;<sub>s</sub></span>. The default quench is a local Gaussian momentum kick in flavour 1, which in the <span class="inline-math">(&phi;<sub>c</sub>,&phi;<sub>s</sub>)</span> basis is implemented by <span class="inline-math">&part;<sub>t</sub>&phi;<sub>c</sub>(x,0)=&part;<sub>t</sub>&phi;<sub>s</sub>(x,0)=A exp[-(x/&sigma;)^2]</span>.</p>
+      <p class="subtitle">The displayed fields are \(\phi_c=(\phi_1+\phi_2)/\sqrt{2}\) and \(\phi_s=(\phi_1-\phi_2)/\sqrt{2}\), namely the symmetric and antisymmetric combinations of the two flavour fields. Positive and negative hydrogen are represented by kink and antikink configurations of \(\phi_s\). The default quench is a local Gaussian momentum kick in flavour 1, which in the \((\phi_c,\phi_s)\) basis is implemented by \(\partial_t\phi_c(x,0)=\partial_t\phi_s(x,0)=A e^{-(x/\sigma)^2}\).</p>
 
       <div class="formula-box">
         <div class="formula-title">equations of motion</div>
-        <div class="formula-line">&part;<sub>t</sub><sup>2</sup>&phi;<sub>c</sub> - &part;<sub>x</sub><sup>2</sup>&phi;<sub>c</sub> + g<sup>2</sup>&phi;<sub>c</sub> + <span class="inline-math">(&radic;(2&pi;)/2)&kappa;<sub>1</sub> sin[&radic;(2&pi;)(&phi;<sub>c</sub>+&phi;<sub>s</sub>)]</span> + <span class="inline-math">(&radic;(2&pi;)/2)&kappa;<sub>2</sub> sin[&radic;(2&pi;)(&phi;<sub>c</sub>-&phi;<sub>s</sub>)]</span> = 0</div>
-        <div class="formula-line">&part;<sub>t</sub><sup>2</sup>&phi;<sub>s</sub> - &part;<sub>x</sub><sup>2</sup>&phi;<sub>s</sub> + <span class="inline-math">(&radic;(2&pi;)/2)&kappa;<sub>1</sub> sin[&radic;(2&pi;)(&phi;<sub>c</sub>+&phi;<sub>s</sub>)]</span> - <span class="inline-math">(&radic;(2&pi;)/2)&kappa;<sub>2</sub> sin[&radic;(2&pi;)(&phi;<sub>c</sub>-&phi;<sub>s</sub>)]</span> = 0</div>
-        <div class="formula-line">V(&phi;<sub>c</sub>,&phi;<sub>s</sub>) = (1/2) g<sup>2</sup>&phi;<sub>c</sub><sup>2</sup> - (&kappa;<sub>1</sub>/2) cos[&radic;(2&pi;)(&phi;<sub>c</sub>+&phi;<sub>s</sub>)] - (&kappa;<sub>2</sub>/2) cos[&radic;(2&pi;)(&phi;<sub>c</sub>-&phi;<sub>s</sub>)]</div>
-        <div class="formula-line">&phi;<sub>c</sub>(x,0)=&phi;<sub>s</sub>(x,0)=0,&nbsp;&nbsp; &part;<sub>t</sub>&phi;<sub>c</sub>(x,0)=&part;<sub>t</sub>&phi;<sub>s</sub>(x,0)=A exp[-(x/&sigma;)<sup>2</sup>]</div>
+        <div class="latex-block">
+          \[
+          \begin{aligned}
+          \partial_t^2\phi_c-\partial_x^2\phi_c+g^2\phi_c
+          &+\frac{\sqrt{2\pi}}{2}\kappa_1\sin\!\bigl[\sqrt{2\pi}(\phi_c+\phi_s)\bigr]
+          +\frac{\sqrt{2\pi}}{2}\kappa_2\sin\!\bigl[\sqrt{2\pi}(\phi_c-\phi_s)\bigr]=0,\\[0.6em]
+          \partial_t^2\phi_s-\partial_x^2\phi_s
+          &+\frac{\sqrt{2\pi}}{2}\kappa_1\sin\!\bigl[\sqrt{2\pi}(\phi_c+\phi_s)\bigr]
+          -\frac{\sqrt{2\pi}}{2}\kappa_2\sin\!\bigl[\sqrt{2\pi}(\phi_c-\phi_s)\bigr]=0.
+          \end{aligned}
+          \]
+          \[
+          V(\phi_c,\phi_s)=\frac12 g^2\phi_c^2-\frac{\kappa_1}{2}\cos\!\bigl[\sqrt{2\pi}(\phi_c+\phi_s)\bigr]-\frac{\kappa_2}{2}\cos\!\bigl[\sqrt{2\pi}(\phi_c-\phi_s)\bigr].
+          \]
+          \[
+          \phi_c(x,0)=\phi_s(x,0)=0,
+          \qquad
+          \partial_t\phi_c(x,0)=\partial_t\phi_s(x,0)=A e^{-(x/\sigma)^2}.
+          \]
+        </div>
       </div>
 
       <div class="controls">
@@ -100,7 +126,7 @@
       </div>
 
       <div class="notes">
-        Dashed lines mark topological sectors <span class="inline-math">n&radic;(2&pi;)</span>.
+        Dashed lines mark topological sectors \(n\sqrt{2\pi}\).
       </div>
     </aside>
 
