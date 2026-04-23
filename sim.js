@@ -166,8 +166,8 @@ function accelerations(phiC, phiS) {
   for (let i = 0; i < n; i++) {
     const a1 = ALPHA * (phiC[i] + phiS[i]);
     const a2 = ALPHA * (phiC[i] - phiS[i]);
-    aC[i] = lapC[i] - sim.g * sim.g * phiC[i] - ALPHA * sim.kappa1 * Math.sin(a1) - ALPHA * sim.kappa2 * Math.sin(a2);
-    aS[i] = lapS[i] - ALPHA * sim.kappa1 * Math.sin(a1) + ALPHA * sim.kappa2 * Math.sin(a2);
+    aC[i] = lapC[i] - sim.g * sim.g * phiC[i] - 0.5 * ALPHA * sim.kappa1 * Math.sin(a1) - 0.5 * ALPHA * sim.kappa2 * Math.sin(a2);
+    aS[i] = lapS[i] - 0.5 * ALPHA * sim.kappa1 * Math.sin(a1) + 0.5 * ALPHA * sim.kappa2 * Math.sin(a2);
   }
   return { aC, aS };
 }
@@ -221,7 +221,7 @@ function energyDensity() {
     const gradS = (sim.phiS[ip] - sim.phiS[im]) / (2 * sim.dx);
     const a1 = ALPHA * (sim.phiC[i] + sim.phiS[i]);
     const a2 = ALPHA * (sim.phiC[i] - sim.phiS[i]);
-    const potential = 0.5 * sim.g * sim.g * sim.phiC[i] * sim.phiC[i] - sim.kappa1 * Math.cos(a1) - sim.kappa2 * Math.cos(a2);
+    const potential = 0.5 * sim.g * sim.g * sim.phiC[i] * sim.phiC[i] - 0.5 * sim.kappa1 * Math.cos(a1) - 0.5 * sim.kappa2 * Math.cos(a2);
     ed[i] = 0.5 * sim.piC[i] * sim.piC[i] + 0.5 * sim.piS[i] * sim.piS[i] + 0.5 * gradC * gradC + 0.5 * gradS * gradS + potential;
   }
   return ed;
