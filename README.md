@@ -1,11 +1,56 @@
 # Classical 2-flavour QED2 quench
 
-Browser simulator for the classical two-field quench model
+Browser simulator for the classical two-field quench model.
 
-- fields: `phi_c`, `phi_s`
-- initial condition: `phi_c = phi_s = 0`
-- initial velocity: `dot phi_c = dot phi_s = A exp(-(x/sigma)^2)`
-- boundary condition: periodic
+## Physical model
+
+The simulator evolves two real fields `phi_c(x,t)` and `phi_s(x,t)` with periodic boundary conditions. The classical equations of motion are
+
+```text
+∂t² phi_c - ∂x² phi_c + g² phi_c
++ α kappa1 sin[α (phi_c + phi_s)]
++ α kappa2 sin[α (phi_c - phi_s)] = 0,
+
+∂t² phi_s - ∂x² phi_s
++ α kappa1 sin[α (phi_c + phi_s)]
+- α kappa2 sin[α (phi_c - phi_s)] = 0,
+```
+
+with
+
+```text
+α = sqrt(2π).
+```
+
+Equivalently, the potential energy density is
+
+```text
+V(phi_c, phi_s) = 1/2 g² phi_c²
+                  - kappa1 cos[α (phi_c + phi_s)]
+                  - kappa2 cos[α (phi_c - phi_s)].
+```
+
+The dashed horizontal guide lines in the plot mark
+
+```text
+phi = n sqrt(2π),   n ∈ Z,
+```
+
+which are useful for visually tracking when `phi_s` crosses neighboring topological sectors.
+
+## Initial condition used in the browser demo
+
+The default quench is
+
+```text
+phi_c(x,0) = 0,
+phi_s(x,0) = 0,
+
+∂t phi_c(x,0) = A exp[-(x/sigma)²],
+∂t phi_s(x,0) = A exp[-(x/sigma)²].
+```
+
+So the browser demo starts from the vacuum field profile and injects a local Gaussian velocity kick into both fields.
 
 ## Adjustable parameters
 
