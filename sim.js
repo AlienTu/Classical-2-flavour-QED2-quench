@@ -59,7 +59,7 @@ function setPreset(name) {
     els.N.value = els.NNumber.value = '2000';
     els.dt.value = els.dtNumber.value = '0.02';
     els.A.value = els.ANumber.value = '4.0';
-    els.sigma.value = els.sigmaNumber.value = '4.0';
+    els.sigma.value = els.sigmaNumber.value = '3.0';
     els.substeps.value = els.substepsNumber.value = '2';
     els.viewMode.value = 'both';
   } else {
