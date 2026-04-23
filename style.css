@@ -19,7 +19,7 @@ body {
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 .sidebar { padding: 20px; }
-.main { padding: 16px; overflow: auto; }
+.main { padding: 16px; overflow: auto; min-height: 780px; }
 h1 {
   margin: 0 0 8px 0;
   font-size: 28px;
@@ -123,8 +123,7 @@ input[type="number"], select {
 canvas {
   display: block;
   width: 100%;
-  height: auto;
-  min-height: 420px;
+  height: 740px;
   border-radius: 14px;
   background: #ffffff;
 }
@@ -136,7 +135,7 @@ code {
 }
 @media (max-width: 1200px) {
   .page { grid-template-columns: 1fr; }
-  .main { order: -1; }
+  .main { order: -1; min-height: 520px; }
 }
 @media (max-width: 640px) {
   .page {
@@ -146,6 +145,7 @@ code {
   .main {
     order: -1;
     padding: 10px;
+    min-height: 420px;
   }
   .sidebar {
     padding: 14px;
@@ -158,6 +158,6 @@ code {
     font-size: 16px;
   }
   canvas {
-    min-height: 360px;
+    height: 380px;
   }
 }
