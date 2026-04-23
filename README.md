@@ -69,7 +69,7 @@ Each parameter supports both slider input and direct number entry.
 - `N = 2000`
 - `dt = 0.02`
 - `A = 4`
-- `sigma = 4`
+- `sigma = 3`
 
 ## Run with GitHub Pages
 
