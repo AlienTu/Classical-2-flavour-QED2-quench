@@ -10,13 +10,14 @@
   <div class="page">
     <aside class="sidebar">
       <h1>Classical 2-flavour QED2</h1>
-      <p class="subtitle">Browser demo for the classical two-field quench with periodic boundary conditions. The fields obey two coupled nonlinear wave equations with <code>alpha = sqrt(2pi)</code>.</p>
+      <p class="subtitle">Browser demo for the classical two-field quench with periodic boundary conditions. Here <code>phi_c = (phi_1 + phi_2)/sqrt(2)</code> and <code>phi_s = (phi_1 - phi_2)/sqrt(2)</code>, so <code>phi_c</code> and <code>phi_s</code> are the symmetric and antisymmetric superpositions of flavour 1 and flavour 2.</p>
 
       <div class="status">
         <div><strong>equations of motion</strong></div>
-        <div><code>∂t² phi_c - ∂x² phi_c + g² phi_c + alpha kappa1 sin[alpha(phi_c+phi_s)] + alpha kappa2 sin[alpha(phi_c-phi_s)] = 0</code></div>
-        <div><code>∂t² phi_s - ∂x² phi_s + alpha kappa1 sin[alpha(phi_c+phi_s)] - alpha kappa2 sin[alpha(phi_c-phi_s)] = 0</code></div>
-        <div><code>V(phi_c,phi_s) = 1/2 g² phi_c² - kappa1 cos[alpha(phi_c+phi_s)] - kappa2 cos[alpha(phi_c-phi_s)]</code></div>
+        <div><code>∂t² phi_c - ∂x² phi_c + g² phi_c + (alpha/2) kappa1 sin[alpha(phi_c+phi_s)] + (alpha/2) kappa2 sin[alpha(phi_c-phi_s)] = 0</code></div>
+        <div><code>∂t² phi_s - ∂x² phi_s + (alpha/2) kappa1 sin[alpha(phi_c+phi_s)] - (alpha/2) kappa2 sin[alpha(phi_c-phi_s)] = 0</code></div>
+        <div><code>V(phi_c,phi_s) = 1/2 g² phi_c² - (kappa1/2) cos[alpha(phi_c+phi_s)] - (kappa2/2) cos[alpha(phi_c-phi_s)]</code></div>
+        <div><code>alpha = sqrt(2pi)</code></div>
         <div><code>phi_c(x,0)=phi_s(x,0)=0</code>, <code>∂t phi_c(x,0)=∂t phi_s(x,0)=A exp[-(x/sigma)^2]</code></div>
       </div>
 
@@ -38,12 +39,12 @@
           <input id="gNumber" type="number" min="0.2" max="4.0" step="0.05" value="1.0" />
         </div>
         <div class="control triple">
-          <label for="kappa1">kappa1 <small>heavy cosine coupling</small></label>
+          <label for="kappa1">kappa1 <small>flavour-symmetric cosine coupling</small></label>
           <input id="kappa1" type="range" min="0.2" max="8.0" step="0.1" value="5.0" />
           <input id="kappa1Number" type="number" min="0.2" max="8.0" step="0.1" value="5.0" />
         </div>
         <div class="control triple">
-          <label for="kappa2">kappa2 <small>light cosine coupling</small></label>
+          <label for="kappa2">kappa2 <small>flavour-antisymmetric cosine coupling</small></label>
           <input id="kappa2" type="range" min="0.1" max="3.0" step="0.05" value="0.5" />
           <input id="kappa2Number" type="number" min="0.1" max="3.0" step="0.05" value="0.5" />
         </div>
