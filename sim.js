@@ -255,17 +255,25 @@ function updateReadout(message) {
 
 function yBounds(mode) {
   const arr = mode === 'phi_c' ? sim.phiC : sim.phiS;
-  const yminRaw = minValue(arr);
-  const ymaxRaw = maxValue(arr);
-  const span = Math.max(ymaxRaw - yminRaw, 0.25 * DELTA, 0.2);
-  const pad = 0.12 * span + 0.05 * DELTA;
+  const yMinRaw = minValue(arr);
+  const yMaxRaw = maxValue(arr);
+  let nLow = Math.ceil(yMinRaw / DELTA);
+  let nHigh = Math.floor(yMaxRaw / DELTA);
+  if (nLow > nHigh) {
+    const nearest = Math.round(0.5 * (yMinRaw + yMaxRaw) / DELTA);
+    nLow = nearest;
+    nHigh = nearest;
+  }
   return {
-    ymin: yminRaw - pad,
-    ymax: ymaxRaw + pad
+    ymin: (nLow - 1) * DELTA,
+    ymax: (nHigh + 1) * DELTA,
+    nLow,
+    nHigh
   };
 }
 
-function drawAxes(x0, y0, w, h, ymin, ymax, title) {
+function drawAxes(x0, y0, w, h, bounds, title) {
+  const { ymin, ymax, nLow, nHigh } = bounds;
   ctx.strokeStyle = '#cbd5e1';
   ctx.lineWidth = 1;
   ctx.strokeRect(x0, y0, w, h);
@@ -279,9 +287,7 @@ function drawAxes(x0, y0, w, h, ymin, ymax, title) {
   ctx.fillText((-sim.L / 2).toFixed(0), x0 - 4, y0 + h + 18);
   ctx.fillText((sim.L / 2).toFixed(0), x0 + w - 26, y0 + h + 18);
 
-  const nMin = Math.ceil(ymin / DELTA);
-  const nMax = Math.floor(ymax / DELTA);
-  for (let n = nMin; n <= nMax; n++) {
+  for (let n = nLow; n <= nHigh; n++) {
     const yVal = n * DELTA;
     const yy = y0 + h - ((yVal - ymin) / (ymax - ymin)) * h;
     ctx.setLineDash([6, 6]);
@@ -335,14 +341,14 @@ function draw() {
 
   if (mode === 'phi_c' || mode === 'both') {
     const boundsC = yBounds('phi_c');
-    drawAxes(pad, pad, plotW, panelH, boundsC.ymin, boundsC.ymax, 'phi_c(x,t)');
+    drawAxes(pad, pad, plotW, panelH, boundsC, 'phi_c(x,t)');
     drawCurve(sim.phiC, pad, pad, plotW, panelH, boundsC.ymin, boundsC.ymax, '#2563eb');
   }
 
   if (mode === 'phi_s' || mode === 'both') {
     const y0 = mode === 'both' ? pad + panelH + gap : pad;
     const boundsS = yBounds('phi_s');
-    drawAxes(pad, y0, plotW, panelH, boundsS.ymin, boundsS.ymax, 'phi_s(x,t)');
+    drawAxes(pad, y0, plotW, panelH, boundsS, 'phi_s(x,t)');
     drawCurve(sim.phiS, pad, y0, plotW, panelH, boundsS.ymin, boundsS.ymax, '#dc2626');
   }
 
