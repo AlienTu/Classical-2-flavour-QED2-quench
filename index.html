@@ -107,13 +107,14 @@
         <div><strong>dx:</strong> <span id="dxReadout">0.0000</span></div>
         <div><strong>current |&phi;<sub>c</sub>| / &radic;(2&pi;):</strong> <span id="phiCReadout">0.000</span></div>
         <div><strong>current |&phi;<sub>s</sub>| / &radic;(2&pi;):</strong> <span id="phiSReadout">0.000</span></div>
+        <div><strong>max consistency error:</strong> <span id="consistencyReadout">0.000e+0</span></div>
         <div><strong>message:</strong> <span id="messageReadout">initialized</span></div>
       </div>
     </section>
 
     <section class="hero-card">
       <div class="formula-box hero-formula no-top-margin">
-        <div class="formula-title">equations of motion</div>
+        <div class="formula-title">equations of motion in the charge/spin basis</div>
         <div class="latex-block">
           \[
           \begin{aligned}
@@ -135,6 +136,46 @@
           \]
         </div>
       </div>
+    </section>
+
+    <section class="hero-card">
+      <div class="formula-box hero-formula no-top-margin">
+        <div class="formula-title">equations of motion in the flavour basis</div>
+        <div class="latex-block">
+          \[
+          \phi_1=\frac{\phi_c+\phi_s}{\sqrt{2}},
+          \qquad
+          \phi_2=\frac{\phi_c-\phi_s}{\sqrt{2}},
+          \qquad
+          \phi_c=\frac{\phi_1+\phi_2}{\sqrt{2}},
+          \qquad
+          \phi_s=\frac{\phi_1-\phi_2}{\sqrt{2}}.
+          \]
+          \[
+          \begin{aligned}
+          \partial_t^2\phi_1-\partial_x^2\phi_1
+          +\frac{g^2}{2}(\phi_1+\phi_2)
+          +\sqrt{\pi}\,\kappa_1\sin(2\sqrt{\pi}\phi_1)&=0,\\[0.6em]
+          \partial_t^2\phi_2-\partial_x^2\phi_2
+          +\frac{g^2}{2}(\phi_1+\phi_2)
+          +\sqrt{\pi}\,\kappa_2\sin(2\sqrt{\pi}\phi_2)&=0.
+          \end{aligned}
+          \]
+          \[
+          \phi_1(x,0)=\phi_2(x,0)=0,
+          \qquad
+          \partial_t\phi_1(x,0)=\sqrt{2}A e^{-(x/\sigma)^2},
+          \qquad
+          \partial_t\phi_2(x,0)=0.
+          \]
+        </div>
+      </div>
+    </section>
+
+    <section class="main sim-card check-card">
+      <h2>Flavour-basis simulation and self-consistency check</h2>
+      <p class="subtitle">The lower animation evolves \((\phi_1,\phi_2)\) with the same parameters, converts the result back to \((\phi_c,\phi_s)\), and plots the differences from the direct \((\phi_c,\phi_s)\) simulation.</p>
+      <canvas id="flavourCanvas" width="1200" height="900"></canvas>
     </section>
   </div>
 
