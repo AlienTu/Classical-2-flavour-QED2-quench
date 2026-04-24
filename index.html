@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Classical 2-flavour QED2 quench simulator</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=20260424c" />
   <script>
     window.MathJax = {
       tex: {
@@ -17,24 +17,16 @@
   <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 </head>
 <body>
-  <div class="page page-column">
-    <section class="hero-card">
-      <div class="hero-grid hero-grid-single">
-        <div class="hero-text">
-          <h1>Classical 2-flavour QED2</h1>
-          <p class="subtitle">Classical real-time simulation of the bosonized 1+1D 2-flavour QED with closed boundary condition. One may interpret flavour 1 as proton and flavour 2 as electron. The quench is used to test whether a vacuum disturbance can nucleate hydrogen-like objects in a 1+1D universe.</p>
-          <p class="subtitle">The displayed fields are \(\phi_c=(\phi_1+\phi_2)/\sqrt{2}\) and \(\phi_s=(\phi_1-\phi_2)/\sqrt{2}\), namely the symmetric and antisymmetric combinations of the two flavour fields. Positive and negative hydrogen are represented by kink and antikink configurations of \(\phi_s\). The default quench is a local Gaussian momentum kick in flavour 1, which in the \((\phi_c,\phi_s)\) basis is implemented by \(\partial_t\phi_c(x,0)=\partial_t\phi_s(x,0)=A e^{-(x/\sigma)^2}\).</p>
-          <div class="notes compact-note">Dashed lines mark topological sectors \(n\sqrt{2\pi}\).</div>
-        </div>
-      </div>
-    </section>
+  <div class="app-shell">
+    <aside class="left-pane">
+      <section class="hero-card">
+        <h1>Classical 2-flavour QED2</h1>
+        <p class="subtitle">Classical real-time simulation of the bosonized 1+1D 2-flavour QED with closed periodic boundary condition. One may interpret flavour 1 as proton and flavour 2 as electron. The quench is used to test whether a vacuum disturbance can nucleate hydrogen-like objects in a 1+1D universe.</p>
+        <p class="subtitle">The displayed fields are \(\phi_c=(\phi_1+\phi_2)/\sqrt{2}\) and \(\phi_s=(\phi_1-\phi_2)/\sqrt{2}\). Positive and negative hydrogen are represented by kink and antikink configurations of \(\phi_s\). The default quench is a local Gaussian momentum kick in flavour 1, which in the \((\phi_c,\phi_s)\) basis is implemented by \(\partial_t\phi_c(x,0)=\partial_t\phi_s(x,0)=A e^{-(x/\sigma)^2}\).</p>
+        <div class="notes compact-note">Dashed lines mark topological sectors. For \(\phi_c,\phi_s\): \(n\sqrt{2\pi}\). For \(\phi_1,\phi_2\): \(n\sqrt{\pi}\).</div>
+      </section>
 
-    <section class="main sim-card">
-      <canvas id="simCanvas" width="1200" height="760"></canvas>
-    </section>
-
-    <section class="bottom-grid">
-      <div class="controls-card">
+      <section class="controls-card">
         <div class="row buttons top-buttons four-buttons">
           <button id="playPauseBtn">Play</button>
           <button id="resetBtn" class="secondary">Reset</button>
@@ -67,13 +59,13 @@
           </div>
           <div class="control triple">
             <label for="N">N <small>grid points</small></label>
-            <input id="N" type="range" min="200" max="2400" step="100" value="2000" />
-            <input id="NNumber" type="number" min="200" max="2400" step="100" value="2000" />
+            <input id="N" type="range" min="200" max="3200" step="100" value="2000" />
+            <input id="NNumber" type="number" min="200" max="3200" step="100" value="2000" />
           </div>
           <div class="control triple">
             <label for="dt">dt <small>time step</small></label>
-            <input id="dt" type="range" min="0.002" max="0.04" step="0.002" value="0.02" />
-            <input id="dtNumber" type="number" min="0.002" max="0.04" step="0.002" value="0.02" />
+            <input id="dt" type="range" min="0.001" max="0.04" step="0.001" value="0.02" />
+            <input id="dtNumber" type="number" min="0.001" max="0.04" step="0.001" value="0.02" />
           </div>
           <div class="control triple">
             <label for="A">A <small>Gaussian kick amplitude</small></label>
@@ -87,21 +79,21 @@
           </div>
           <div class="control triple">
             <label for="substeps">substeps <small>steps per frame</small></label>
-            <input id="substeps" type="range" min="1" max="12" step="1" value="2" />
-            <input id="substepsNumber" type="number" min="1" max="12" step="1" value="2" />
+            <input id="substeps" type="range" min="1" max="16" step="1" value="2" />
+            <input id="substepsNumber" type="number" min="1" max="16" step="1" value="2" />
           </div>
           <div class="control single full-width">
-            <label for="viewMode">view <small>plot mode</small></label>
+            <label for="viewMode">view <small>top row plot mode</small></label>
             <select id="viewMode">
-              <option value="both">&phi;<sub>c</sub> + &phi;<sub>s</sub></option>
-              <option value="phi_c">only &phi;<sub>c</sub></option>
-              <option value="phi_s">only &phi;<sub>s</sub></option>
+              <option value="both">show all four fields</option>
+              <option value="charge_only">only charge/spin row</option>
+              <option value="flavour_only">only flavour row</option>
             </select>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="status-card status">
+      <section class="status-card status">
         <div><strong>time:</strong> <span id="timeReadout">0.00</span></div>
         <div><strong>energy:</strong> <span id="energyReadout">0.0000</span></div>
         <div><strong>dx:</strong> <span id="dxReadout">0.0000</span></div>
@@ -109,76 +101,84 @@
         <div><strong>current |&phi;<sub>s</sub>| / &radic;(2&pi;):</strong> <span id="phiSReadout">0.000</span></div>
         <div><strong>max consistency error:</strong> <span id="consistencyReadout">0.000e+0</span></div>
         <div><strong>message:</strong> <span id="messageReadout">initialized</span></div>
-      </div>
-    </section>
+      </section>
 
-    <section class="hero-card">
-      <div class="formula-box hero-formula no-top-margin">
-        <div class="formula-title">equations of motion in the charge/spin basis</div>
-        <div class="latex-block">
-          \[
-          \begin{aligned}
-          \partial_t^2\phi_c-\partial_x^2\phi_c+g^2\phi_c
-          &+\frac{\sqrt{2\pi}}{2}\kappa_1\sin\!\bigl[\sqrt{2\pi}(\phi_c+\phi_s)\bigr]
-          +\frac{\sqrt{2\pi}}{2}\kappa_2\sin\!\bigl[\sqrt{2\pi}(\phi_c-\phi_s)\bigr]=0,\\[0.6em]
-          \partial_t^2\phi_s-\partial_x^2\phi_s
-          &+\frac{\sqrt{2\pi}}{2}\kappa_1\sin\!\bigl[\sqrt{2\pi}(\phi_c+\phi_s)\bigr]
-          -\frac{\sqrt{2\pi}}{2}\kappa_2\sin\!\bigl[\sqrt{2\pi}(\phi_c-\phi_s)\bigr]=0.
-          \end{aligned}
-          \]
-          \[
-          V(\phi_c,\phi_s)=\frac12 g^2\phi_c^2-\frac{\kappa_1}{2}\cos\!\bigl[\sqrt{2\pi}(\phi_c+\phi_s)\bigr]-\frac{\kappa_2}{2}\cos\!\bigl[\sqrt{2\pi}(\phi_c-\phi_s)\bigr].
-          \]
-          \[
-          \phi_c(x,0)=\phi_s(x,0)=0,
-          \qquad
-          \partial_t\phi_c(x,0)=\partial_t\phi_s(x,0)=A e^{-(x/\sigma)^2}.
-          \]
+      <section class="hero-card">
+        <div class="formula-box hero-formula no-top-margin">
+          <div class="formula-title">equations of motion in the charge/spin basis</div>
+          <div class="latex-block">
+            \[
+            \begin{aligned}
+            \partial_t^2\phi_c-\partial_x^2\phi_c+g^2\phi_c
+            &+\frac{\sqrt{2\pi}}{2}\kappa_1\sin\!\bigl[\sqrt{2\pi}(\phi_c+\phi_s)\bigr]
+            +\frac{\sqrt{2\pi}}{2}\kappa_2\sin\!\bigl[\sqrt{2\pi}(\phi_c-\phi_s)\bigr]=0,\\[0.6em]
+            \partial_t^2\phi_s-\partial_x^2\phi_s
+            &+\frac{\sqrt{2\pi}}{2}\kappa_1\sin\!\bigl[\sqrt{2\pi}(\phi_c+\phi_s)\bigr]
+            -\frac{\sqrt{2\pi}}{2}\kappa_2\sin\!\bigl[\sqrt{2\pi}(\phi_c-\phi_s)\bigr]=0.
+            \end{aligned}
+            \]
+            \[
+            V(\phi_c,\phi_s)=\frac12 g^2\phi_c^2-\frac{\kappa_1}{2}\cos\!\bigl[\sqrt{2\pi}(\phi_c+\phi_s)\bigr]-\frac{\kappa_2}{2}\cos\!\bigl[\sqrt{2\pi}(\phi_c-\phi_s)\bigr].
+            \]
+            \[
+            \phi_c(x,0)=\phi_s(x,0)=0,
+            \qquad
+            \partial_t\phi_c(x,0)=\partial_t\phi_s(x,0)=A e^{-(x/\sigma)^2}.
+            \]
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="hero-card">
-      <div class="formula-box hero-formula no-top-margin">
-        <div class="formula-title">equations of motion in the flavour basis</div>
-        <div class="latex-block">
-          \[
-          \phi_1=\frac{\phi_c+\phi_s}{\sqrt{2}},
-          \qquad
-          \phi_2=\frac{\phi_c-\phi_s}{\sqrt{2}},
-          \qquad
-          \phi_c=\frac{\phi_1+\phi_2}{\sqrt{2}},
-          \qquad
-          \phi_s=\frac{\phi_1-\phi_2}{\sqrt{2}}.
-          \]
-          \[
-          \begin{aligned}
-          \partial_t^2\phi_1-\partial_x^2\phi_1
-          +\frac{g^2}{2}(\phi_1+\phi_2)
-          +\sqrt{\pi}\,\kappa_1\sin(2\sqrt{\pi}\phi_1)&=0,\\[0.6em]
-          \partial_t^2\phi_2-\partial_x^2\phi_2
-          +\frac{g^2}{2}(\phi_1+\phi_2)
-          +\sqrt{\pi}\,\kappa_2\sin(2\sqrt{\pi}\phi_2)&=0.
-          \end{aligned}
-          \]
-          \[
-          \phi_1(x,0)=\phi_2(x,0)=0,
-          \qquad
-          \partial_t\phi_1(x,0)=\sqrt{2}A e^{-(x/\sigma)^2},
-          \qquad
-          \partial_t\phi_2(x,0)=0.
-          \]
+      <section class="hero-card">
+        <div class="formula-box hero-formula no-top-margin">
+          <div class="formula-title">equations of motion in the flavour basis</div>
+          <div class="latex-block">
+            \[
+            \phi_1=\frac{\phi_c+\phi_s}{\sqrt{2}},
+            \qquad
+            \phi_2=\frac{\phi_c-\phi_s}{\sqrt{2}},
+            \qquad
+            \phi_c=\frac{\phi_1+\phi_2}{\sqrt{2}},
+            \qquad
+            \phi_s=\frac{\phi_1-\phi_2}{\sqrt{2}}.
+            \]
+            \[
+            \begin{aligned}
+            \partial_t^2\phi_1-\partial_x^2\phi_1
+            +\frac{g^2}{2}(\phi_1+\phi_2)
+            +\sqrt{\pi}\,\kappa_1\sin(2\sqrt{\pi}\phi_1)&=0,\\[0.6em]
+            \partial_t^2\phi_2-\partial_x^2\phi_2
+            +\frac{g^2}{2}(\phi_1+\phi_2)
+            +\sqrt{\pi}\,\kappa_2\sin(2\sqrt{\pi}\phi_2)&=0.
+            \end{aligned}
+            \]
+            \[
+            \phi_1(x,0)=\phi_2(x,0)=0,
+            \qquad
+            \partial_t\phi_1(x,0)=\sqrt{2}A e^{-(x/\sigma)^2},
+            \qquad
+            \partial_t\phi_2(x,0)=0.
+            \]
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </aside>
 
-    <section class="main sim-card check-card">
-      <h2>Flavour-basis simulation and self-consistency check</h2>
-      <p class="subtitle">The lower animation evolves \((\phi_1,\phi_2)\) with the same parameters, converts the result back to \((\phi_c,\phi_s)\), and plots the differences from the direct \((\phi_c,\phi_s)\) simulation.</p>
-      <canvas id="flavourCanvas" width="1200" height="900"></canvas>
-    </section>
+    <main class="right-pane">
+      <section class="main sim-card">
+        <h2>Field evolution</h2>
+        <p class="subtitle">Top row: \(\phi_c\) and \(\phi_s\). Bottom row: \(\phi_1\) and \(\phi_2\). Each panel is evolved using the same numerical parameters.</p>
+        <canvas id="simCanvas" width="1500" height="980"></canvas>
+      </section>
+
+      <section class="main sim-card check-card">
+        <h2>Self-consistency check</h2>
+        <p class="subtitle">Top row compares the direct \((\phi_c,\phi_s)\) evolution with the fields reconstructed from \((\phi_1,\phi_2)\). Bottom row shows the residuals \(\Delta\phi_c\) and \(\Delta\phi_s\).</p>
+        <canvas id="flavourCanvas" width="1500" height="920"></canvas>
+      </section>
+    </main>
   </div>
 
-  <script src="sim.js"></script>
+  <script src="sim.js?v=20260424d"></script>
 </body>
 </html>
