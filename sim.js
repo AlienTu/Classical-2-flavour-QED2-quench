@@ -1,8 +1,10 @@
 const els = {
   canvas: document.getElementById('simCanvas'),
+  flavourCanvas: document.getElementById('flavourCanvas'),
   playPauseBtn: document.getElementById('playPauseBtn'),
   resetBtn: document.getElementById('resetBtn'),
   defaultPresetBtn: document.getElementById('defaultPresetBtn'),
+  nearThresholdPresetBtn: document.getElementById('nearThresholdPresetBtn'),
   g: document.getElementById('g'),
   gNumber: document.getElementById('gNumber'),
   kappa1: document.getElementById('kappa1'),
@@ -27,12 +29,17 @@ const els = {
   dxReadout: document.getElementById('dxReadout'),
   phiCReadout: document.getElementById('phiCReadout'),
   phiSReadout: document.getElementById('phiSReadout'),
+  consistencyReadout: document.getElementById('consistencyReadout'),
   messageReadout: document.getElementById('messageReadout')
 };
 
 const ctx = els.canvas.getContext('2d');
+const fctx = els.flavourCanvas.getContext('2d');
 const ALPHA = Math.sqrt(2 * Math.PI);
 const DELTA = Math.sqrt(2 * Math.PI);
+const SQRT2 = Math.sqrt(2);
+const SQRT_PI = Math.sqrt(Math.PI);
+const BETA = 2 * Math.sqrt(Math.PI);
 let sim = null;
 let running = false;
 let rafId = null;
@@ -62,6 +69,19 @@ function setPreset() {
   els.viewMode.value = 'both';
 }
 
+function setNearThresholdPreset() {
+  els.g.value = els.gNumber.value = '1.58';
+  els.kappa1.value = els.kappa1Number.value = '1.0';
+  els.kappa2.value = els.kappa2Number.value = '1.0';
+  els.L.value = els.LNumber.value = '200';
+  els.N.value = els.NNumber.value = '2000';
+  els.dt.value = els.dtNumber.value = '0.01';
+  els.A.value = els.ANumber.value = '3.0';
+  els.sigma.value = els.sigmaNumber.value = '4.0';
+  els.substeps.value = els.substepsNumber.value = '2';
+  els.viewMode.value = 'both';
+}
+
 function params() {
   return {
     g: Number(els.gNumber.value),
@@ -77,19 +97,11 @@ function params() {
   };
 }
 
-function syncPair(from, to) {
-  els[to].value = els[from].value;
-}
+function syncPair(from, to) { els[to].value = els[from].value; }
 
 function bindPair(rangeId, numberId) {
-  els[rangeId].addEventListener('input', () => {
-    syncPair(rangeId, numberId);
-    reinitialize();
-  });
-  els[numberId].addEventListener('input', () => {
-    syncPair(numberId, rangeId);
-    reinitialize();
-  });
+  els[rangeId].addEventListener('input', () => { syncPair(rangeId, numberId); reinitialize(); });
+  els[numberId].addEventListener('input', () => { syncPair(numberId, rangeId); reinitialize(); });
 }
 
 function reinitialize() {
@@ -106,27 +118,24 @@ function initialize() {
   const phiS = new Float64Array(p.N);
   const piC = new Float64Array(p.N);
   const piS = new Float64Array(p.N);
+  const phi1 = new Float64Array(p.N);
+  const phi2 = new Float64Array(p.N);
+  const pi1 = new Float64Array(p.N);
+  const pi2 = new Float64Array(p.N);
 
   for (let i = 0; i < p.N; i++) {
     x[i] = -p.L / 2 + i * dx;
     const kick = p.A * Math.exp(-((x[i] / p.sigma) ** 2));
     piC[i] = kick;
     piS[i] = kick;
+    pi1[i] = SQRT2 * kick;
+    pi2[i] = 0;
   }
 
-  sim = {
-    ...p,
-    dx,
-    x,
-    phiC,
-    phiS,
-    piC,
-    piS,
-    t: 0
-  };
-
+  sim = { ...p, dx, x, phiC, phiS, piC, piS, phi1, phi2, pi1, pi2, t: 0 };
   updateReadout('initialized');
   draw();
+  drawFlavourCheck();
 }
 
 function laplacianPeriodic(field, dx) {
@@ -141,68 +150,97 @@ function laplacianPeriodic(field, dx) {
   return out;
 }
 
-function accelerations(phiC, phiS) {
+function accelerationsCS(phiC, phiS) {
   const n = phiC.length;
   const lapC = laplacianPeriodic(phiC, sim.dx);
   const lapS = laplacianPeriodic(phiS, sim.dx);
   const aC = new Float64Array(n);
   const aS = new Float64Array(n);
   for (let i = 0; i < n; i++) {
-    const a1 = ALPHA * (phiC[i] + phiS[i]);
-    const a2 = ALPHA * (phiC[i] - phiS[i]);
-    aC[i] = lapC[i] - sim.g * sim.g * phiC[i] - 0.5 * ALPHA * sim.kappa1 * Math.sin(a1) - 0.5 * ALPHA * sim.kappa2 * Math.sin(a2);
-    aS[i] = lapS[i] - 0.5 * ALPHA * sim.kappa1 * Math.sin(a1) + 0.5 * ALPHA * sim.kappa2 * Math.sin(a2);
+    const arg1 = ALPHA * (phiC[i] + phiS[i]);
+    const arg2 = ALPHA * (phiC[i] - phiS[i]);
+    aC[i] = lapC[i] - sim.g * sim.g * phiC[i] - 0.5 * ALPHA * sim.kappa1 * Math.sin(arg1) - 0.5 * ALPHA * sim.kappa2 * Math.sin(arg2);
+    aS[i] = lapS[i] - 0.5 * ALPHA * sim.kappa1 * Math.sin(arg1) + 0.5 * ALPHA * sim.kappa2 * Math.sin(arg2);
   }
   return { aC, aS };
 }
 
+function accelerations12(phi1, phi2) {
+  const n = phi1.length;
+  const lap1 = laplacianPeriodic(phi1, sim.dx);
+  const lap2 = laplacianPeriodic(phi2, sim.dx);
+  const a1 = new Float64Array(n);
+  const a2 = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    const chargeTerm = 0.5 * sim.g * sim.g * (phi1[i] + phi2[i]);
+    a1[i] = lap1[i] - chargeTerm - SQRT_PI * sim.kappa1 * Math.sin(BETA * phi1[i]);
+    a2[i] = lap2[i] - chargeTerm - SQRT_PI * sim.kappa2 * Math.sin(BETA * phi2[i]);
+  }
+  return { a1, a2 };
+}
+
 function stepLeapfrog() {
-  const { phiC, phiS, piC, piS, dt } = sim;
-  const n = phiC.length;
-  const { aC, aS } = accelerations(phiC, phiS);
-  const piCHalf = new Float64Array(n);
-  const piSHalf = new Float64Array(n);
-  const phiCNew = new Float64Array(n);
-  const phiSNew = new Float64Array(n);
+  const n = sim.phiC.length;
+  const dt = sim.dt;
+  const { aC, aS } = accelerationsCS(sim.phiC, sim.phiS);
+  const { a1, a2 } = accelerations12(sim.phi1, sim.phi2);
+
+  const piCHalf = new Float64Array(n), piSHalf = new Float64Array(n);
+  const pi1Half = new Float64Array(n), pi2Half = new Float64Array(n);
+  const phiCNew = new Float64Array(n), phiSNew = new Float64Array(n);
+  const phi1New = new Float64Array(n), phi2New = new Float64Array(n);
 
   for (let i = 0; i < n; i++) {
-    piCHalf[i] = piC[i] + 0.5 * dt * aC[i];
-    piSHalf[i] = piS[i] + 0.5 * dt * aS[i];
-    phiCNew[i] = phiC[i] + dt * piCHalf[i];
-    phiSNew[i] = phiS[i] + dt * piSHalf[i];
+    piCHalf[i] = sim.piC[i] + 0.5 * dt * aC[i];
+    piSHalf[i] = sim.piS[i] + 0.5 * dt * aS[i];
+    phiCNew[i] = sim.phiC[i] + dt * piCHalf[i];
+    phiSNew[i] = sim.phiS[i] + dt * piSHalf[i];
+
+    pi1Half[i] = sim.pi1[i] + 0.5 * dt * a1[i];
+    pi2Half[i] = sim.pi2[i] + 0.5 * dt * a2[i];
+    phi1New[i] = sim.phi1[i] + dt * pi1Half[i];
+    phi2New[i] = sim.phi2[i] + dt * pi2Half[i];
   }
 
-  const { aC: aCNew, aS: aSNew } = accelerations(phiCNew, phiSNew);
-  const piCNew = new Float64Array(n);
-  const piSNew = new Float64Array(n);
+  const { aC: aCNew, aS: aSNew } = accelerationsCS(phiCNew, phiSNew);
+  const { a1: a1New, a2: a2New } = accelerations12(phi1New, phi2New);
+  const piCNew = new Float64Array(n), piSNew = new Float64Array(n);
+  const pi1New = new Float64Array(n), pi2New = new Float64Array(n);
+
   for (let i = 0; i < n; i++) {
     piCNew[i] = piCHalf[i] + 0.5 * dt * aCNew[i];
     piSNew[i] = piSHalf[i] + 0.5 * dt * aSNew[i];
+    pi1New[i] = pi1Half[i] + 0.5 * dt * a1New[i];
+    pi2New[i] = pi2Half[i] + 0.5 * dt * a2New[i];
   }
 
-  sim.phiC = phiCNew;
-  sim.phiS = phiSNew;
-  sim.piC = piCNew;
-  sim.piS = piSNew;
+  sim.phiC = phiCNew; sim.phiS = phiSNew; sim.piC = piCNew; sim.piS = piSNew;
+  sim.phi1 = phi1New; sim.phi2 = phi2New; sim.pi1 = pi1New; sim.pi2 = pi2New;
   sim.t += dt;
 }
 
-function maxAbs(arr) {
-  let m = 0;
-  for (let i = 0; i < arr.length; i++) m = Math.max(m, Math.abs(arr[i]));
-  return m;
+function maxAbs(arr) { let m = 0; for (let i = 0; i < arr.length; i++) m = Math.max(m, Math.abs(arr[i])); return m; }
+function minValue(arr) { let m = Infinity; for (let i = 0; i < arr.length; i++) m = Math.min(m, arr[i]); return m; }
+function maxValue(arr) { let m = -Infinity; for (let i = 0; i < arr.length; i++) m = Math.max(m, arr[i]); return m; }
+
+function convertedFields() {
+  const n = sim.phi1.length;
+  const phiCFrom12 = new Float64Array(n);
+  const phiSFrom12 = new Float64Array(n);
+  const diffC = new Float64Array(n);
+  const diffS = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    phiCFrom12[i] = (sim.phi1[i] + sim.phi2[i]) / SQRT2;
+    phiSFrom12[i] = (sim.phi1[i] - sim.phi2[i]) / SQRT2;
+    diffC[i] = phiCFrom12[i] - sim.phiC[i];
+    diffS[i] = phiSFrom12[i] - sim.phiS[i];
+  }
+  return { phiCFrom12, phiSFrom12, diffC, diffS };
 }
 
-function minValue(arr) {
-  let m = Infinity;
-  for (let i = 0; i < arr.length; i++) m = Math.min(m, arr[i]);
-  return m;
-}
-
-function maxValue(arr) {
-  let m = -Infinity;
-  for (let i = 0; i < arr.length; i++) m = Math.max(m, arr[i]);
-  return m;
+function consistencyError() {
+  const { diffC, diffS } = convertedFields();
+  return Math.max(maxAbs(diffC), maxAbs(diffS));
 }
 
 function energyDensity() {
@@ -213,36 +251,35 @@ function energyDensity() {
     const im = i === 0 ? n - 1 : i - 1;
     const gradC = (sim.phiC[ip] - sim.phiC[im]) / (2 * sim.dx);
     const gradS = (sim.phiS[ip] - sim.phiS[im]) / (2 * sim.dx);
-    const a1 = ALPHA * (sim.phiC[i] + sim.phiS[i]);
-    const a2 = ALPHA * (sim.phiC[i] - sim.phiS[i]);
-    const potential = 0.5 * sim.g * sim.g * sim.phiC[i] * sim.phiC[i] - 0.5 * sim.kappa1 * Math.cos(a1) - 0.5 * sim.kappa2 * Math.cos(a2);
+    const arg1 = ALPHA * (sim.phiC[i] + sim.phiS[i]);
+    const arg2 = ALPHA * (sim.phiC[i] - sim.phiS[i]);
+    const potential = 0.5 * sim.g * sim.g * sim.phiC[i] * sim.phiC[i] - 0.5 * sim.kappa1 * Math.cos(arg1) - 0.5 * sim.kappa2 * Math.cos(arg2);
     ed[i] = 0.5 * sim.piC[i] * sim.piC[i] + 0.5 * sim.piS[i] * sim.piS[i] + 0.5 * gradC * gradC + 0.5 * gradS * gradS + potential;
   }
   return ed;
 }
 
-function totalEnergy(ed) {
-  let sum = 0;
-  for (let i = 0; i < ed.length; i++) sum += ed[i];
-  return sum * sim.dx;
-}
+function totalEnergy(ed) { let sum = 0; for (let i = 0; i < ed.length; i++) sum += ed[i]; return sum * sim.dx; }
 
 function updateReadout(message) {
   const ed = energyDensity();
-  const currentAbsPhiC = maxAbs(sim.phiC);
-  const currentAbsPhiS = maxAbs(sim.phiS);
   els.timeReadout.textContent = sim.t.toFixed(2);
   els.energyReadout.textContent = totalEnergy(ed).toFixed(4);
   els.dxReadout.textContent = sim.dx.toFixed(4);
-  els.phiCReadout.textContent = (currentAbsPhiC / DELTA).toFixed(3);
-  els.phiSReadout.textContent = (currentAbsPhiS / DELTA).toFixed(3);
+  els.phiCReadout.textContent = (maxAbs(sim.phiC) / DELTA).toFixed(3);
+  els.phiSReadout.textContent = (maxAbs(sim.phiS) / DELTA).toFixed(3);
+  els.consistencyReadout.textContent = consistencyError().toExponential(3);
   els.messageReadout.textContent = message;
 }
 
-function yBounds(mode) {
-  const arr = mode === 'phi_c' ? sim.phiC : sim.phiS;
-  const yMinRaw = minValue(arr);
-  const yMaxRaw = maxValue(arr);
+function boundsForArrays(arrays, sectorLines = true) {
+  let yMinRaw = Infinity, yMaxRaw = -Infinity;
+  arrays.forEach(arr => { yMinRaw = Math.min(yMinRaw, minValue(arr)); yMaxRaw = Math.max(yMaxRaw, maxValue(arr)); });
+  if (Math.abs(yMaxRaw - yMinRaw) < 1e-12) { yMinRaw -= 1; yMaxRaw += 1; }
+  if (!sectorLines) {
+    const pad = 0.15 * (yMaxRaw - yMinRaw);
+    return { ymin: yMinRaw - pad, ymax: yMaxRaw + pad, nLow: 1, nHigh: 0 };
+  }
   let nLow = Math.ceil(yMinRaw / DELTA);
   let nHigh = Math.floor(yMaxRaw / DELTA);
   if (nLow > nHigh) {
@@ -250,100 +287,114 @@ function yBounds(mode) {
     nLow = nearest;
     nHigh = nearest;
   }
-  return {
-    ymin: (nLow - 1) * DELTA,
-    ymax: (nHigh + 1) * DELTA,
-    nLow,
-    nHigh
-  };
+  return { ymin: (nLow - 1) * DELTA, ymax: (nHigh + 1) * DELTA, nLow, nHigh };
 }
 
-function drawAxes(x0, y0, w, h, bounds, title) {
-  const { ymin, ymax, nLow, nHigh } = bounds;
-  ctx.strokeStyle = '#cbd5e1';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(x0, y0, w, h);
-  ctx.fillStyle = '#0f172a';
-  ctx.font = '14px sans-serif';
-  ctx.fillText(title, x0, y0 - 10);
-  ctx.fillStyle = '#475569';
-  ctx.font = '12px sans-serif';
-  ctx.fillText(ymax.toFixed(2), 8, y0 + 12);
-  ctx.fillText(ymin.toFixed(2), 8, y0 + h);
-  ctx.fillText((-sim.L / 2).toFixed(0), x0 - 4, y0 + h + 18);
-  ctx.fillText((sim.L / 2).toFixed(0), x0 + w - 26, y0 + h + 18);
+function yBounds(mode) {
+  return boundsForArrays([mode === 'phi_c' ? sim.phiC : sim.phiS], true);
+}
 
-  for (let n = nLow; n <= nHigh; n++) {
-    const yVal = n * DELTA;
-    const yy = y0 + h - ((yVal - ymin) / (ymax - ymin)) * h;
-    ctx.setLineDash([6, 6]);
-    ctx.strokeStyle = '#94a3b8';
-    ctx.beginPath();
-    ctx.moveTo(x0, yy);
-    ctx.lineTo(x0 + w, yy);
-    ctx.stroke();
-    ctx.setLineDash([]);
+function drawAxesOn(c, canvas, x0, y0, w, h, bounds, title, showSectorLines = true) {
+  const { ymin, ymax, nLow, nHigh } = bounds;
+  c.strokeStyle = '#cbd5e1'; c.lineWidth = 1; c.strokeRect(x0, y0, w, h);
+  c.fillStyle = '#0f172a'; c.font = '14px sans-serif'; c.fillText(title, x0, y0 - 10);
+  c.fillStyle = '#475569'; c.font = '12px sans-serif';
+  c.fillText(ymax.toExponential ? ymax.toPrecision(3) : ymax, 8, y0 + 12);
+  c.fillText(ymin.toExponential ? ymin.toPrecision(3) : ymin, 8, y0 + h);
+  c.fillText((-sim.L / 2).toFixed(0), x0 - 4, y0 + h + 18);
+  c.fillText((sim.L / 2).toFixed(0), x0 + w - 26, y0 + h + 18);
+  if (showSectorLines) {
+    for (let n = nLow; n <= nHigh; n++) {
+      const yVal = n * DELTA;
+      const yy = y0 + h - ((yVal - ymin) / (ymax - ymin)) * h;
+      c.setLineDash([6, 6]); c.strokeStyle = '#94a3b8'; c.beginPath(); c.moveTo(x0, yy); c.lineTo(x0 + w, yy); c.stroke(); c.setLineDash([]);
+    }
   }
 }
 
-function drawCurve(arr, x0, y0, w, h, ymin, ymax, color) {
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
+function drawAxes(x0, y0, w, h, bounds, title) { drawAxesOn(ctx, els.canvas, x0, y0, w, h, bounds, title, true); }
+
+function drawCurveOn(c, arr, x0, y0, w, h, ymin, ymax, color, lineWidth = 2) {
+  c.strokeStyle = color; c.lineWidth = lineWidth; c.beginPath();
   for (let i = 0; i < arr.length; i++) {
     const xx = x0 + (i / (arr.length - 1)) * w;
     const yy = y0 + h - ((arr[i] - ymin) / (ymax - ymin)) * h;
-    if (i === 0) ctx.moveTo(xx, yy);
-    else ctx.lineTo(xx, yy);
+    if (i === 0) c.moveTo(xx, yy); else c.lineTo(xx, yy);
   }
-  ctx.stroke();
+  c.stroke();
 }
 
-function drawLegend(entries, x, y) {
-  ctx.font = '13px sans-serif';
+function drawCurve(arr, x0, y0, w, h, ymin, ymax, color) { drawCurveOn(ctx, arr, x0, y0, w, h, ymin, ymax, color); }
+
+function drawLegendOn(c, entries, x, y) {
+  c.font = '13px sans-serif';
   entries.forEach((entry, idx) => {
-    ctx.strokeStyle = entry.color;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(x, y + idx * 20);
-    ctx.lineTo(x + 18, y + idx * 20);
-    ctx.stroke();
-    ctx.fillStyle = '#0f172a';
-    ctx.fillText(entry.label, x + 26, y + 4 + idx * 20);
+    c.strokeStyle = entry.color; c.lineWidth = 3; c.setLineDash(entry.dash || []);
+    c.beginPath(); c.moveTo(x, y + idx * 20); c.lineTo(x + 18, y + idx * 20); c.stroke(); c.setLineDash([]);
+    c.fillStyle = '#0f172a'; c.fillText(entry.label, x + 26, y + 4 + idx * 20);
   });
 }
 
+function drawLegend(entries, x, y) { drawLegendOn(ctx, entries, x, y); }
+
 function draw() {
   ctx.clearRect(0, 0, els.canvas.width, els.canvas.height);
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, els.canvas.width, els.canvas.height);
-
-  const pad = 48;
-  const gap = 28;
-  const plotW = els.canvas.width - 2 * pad;
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, els.canvas.width, els.canvas.height);
+  const pad = 48, gap = 28, plotW = els.canvas.width - 2 * pad;
   const mode = sim.viewMode;
   const panels = mode === 'both' ? 2 : 1;
   const panelH = (els.canvas.height - 2 * pad - (panels - 1) * gap) / panels;
-
   if (mode === 'phi_c' || mode === 'both') {
     const boundsC = yBounds('phi_c');
-    drawAxes(pad, pad, plotW, panelH, boundsC, 'phi_c(x,t)');
+    drawAxes(pad, pad, plotW, panelH, boundsC, 'direct phi_c(x,t)');
     drawCurve(sim.phiC, pad, pad, plotW, panelH, boundsC.ymin, boundsC.ymax, '#2563eb');
   }
-
   if (mode === 'phi_s' || mode === 'both') {
     const y0 = mode === 'both' ? pad + panelH + gap : pad;
     const boundsS = yBounds('phi_s');
-    drawAxes(pad, y0, plotW, panelH, boundsS, 'phi_s(x,t)');
+    drawAxes(pad, y0, plotW, panelH, boundsS, 'direct phi_s(x,t)');
     drawCurve(sim.phiS, pad, y0, plotW, panelH, boundsS.ymin, boundsS.ymax, '#dc2626');
   }
+  if (mode === 'both') drawLegend([{ color: '#2563eb', label: 'phi_c' }, { color: '#dc2626', label: 'phi_s' }], els.canvas.width - 160, 32);
+}
 
-  if (mode === 'both') {
-    drawLegend([
-      { color: '#2563eb', label: 'phi_c' },
-      { color: '#dc2626', label: 'phi_s' }
-    ], els.canvas.width - 160, 32);
-  }
+function drawFlavourCheck() {
+  const c = fctx;
+  const canvas = els.flavourCanvas;
+  c.clearRect(0, 0, canvas.width, canvas.height);
+  c.fillStyle = '#ffffff'; c.fillRect(0, 0, canvas.width, canvas.height);
+
+  const { phiCFrom12, phiSFrom12, diffC, diffS } = convertedFields();
+  const pad = 52, gap = 38, plotW = canvas.width - 2 * pad;
+  const panelH = (canvas.height - 2 * pad - 3 * gap) / 4;
+
+  let y0 = pad;
+  let b = boundsForArrays([sim.phi1, sim.phi2], true);
+  drawAxesOn(c, canvas, pad, y0, plotW, panelH, b, 'flavour-basis fields: phi_1, phi_2', true);
+  drawCurveOn(c, sim.phi1, pad, y0, plotW, panelH, b.ymin, b.ymax, '#7c3aed');
+  drawCurveOn(c, sim.phi2, pad, y0, plotW, panelH, b.ymin, b.ymax, '#059669');
+  drawLegendOn(c, [{ color: '#7c3aed', label: 'phi_1' }, { color: '#059669', label: 'phi_2' }], canvas.width - 180, y0 + 18);
+
+  y0 += panelH + gap;
+  b = boundsForArrays([sim.phiC, phiCFrom12], true);
+  drawAxesOn(c, canvas, pad, y0, plotW, panelH, b, 'phi_c: direct simulation vs reconstructed from phi_1, phi_2', true);
+  drawCurveOn(c, sim.phiC, pad, y0, plotW, panelH, b.ymin, b.ymax, '#2563eb');
+  drawCurveOn(c, phiCFrom12, pad, y0, plotW, panelH, b.ymin, b.ymax, '#f97316');
+  drawLegendOn(c, [{ color: '#2563eb', label: 'direct phi_c' }, { color: '#f97316', label: 'from phi_1, phi_2' }], canvas.width - 230, y0 + 18);
+
+  y0 += panelH + gap;
+  b = boundsForArrays([sim.phiS, phiSFrom12], true);
+  drawAxesOn(c, canvas, pad, y0, plotW, panelH, b, 'phi_s: direct simulation vs reconstructed from phi_1, phi_2', true);
+  drawCurveOn(c, sim.phiS, pad, y0, plotW, panelH, b.ymin, b.ymax, '#dc2626');
+  drawCurveOn(c, phiSFrom12, pad, y0, plotW, panelH, b.ymin, b.ymax, '#0ea5e9');
+  drawLegendOn(c, [{ color: '#dc2626', label: 'direct phi_s' }, { color: '#0ea5e9', label: 'from phi_1, phi_2' }], canvas.width - 230, y0 + 18);
+
+  y0 += panelH + gap;
+  b = boundsForArrays([diffC, diffS], false);
+  drawAxesOn(c, canvas, pad, y0, plotW, panelH, b, 'consistency residuals: reconstructed minus direct', false);
+  drawCurveOn(c, diffC, pad, y0, plotW, panelH, b.ymin, b.ymax, '#111827');
+  drawCurveOn(c, diffS, pad, y0, plotW, panelH, b.ymin, b.ymax, '#ef4444');
+  drawLegendOn(c, [{ color: '#111827', label: 'Delta phi_c' }, { color: '#ef4444', label: 'Delta phi_s' }], canvas.width - 180, y0 + 18);
 }
 
 function tick() {
@@ -351,6 +402,7 @@ function tick() {
     for (let k = 0; k < sim.substeps; k++) stepLeapfrog();
     updateReadout('running');
     draw();
+    drawFlavourCheck();
   }
   rafId = requestAnimationFrame(tick);
 }
@@ -360,16 +412,9 @@ els.playPauseBtn.addEventListener('click', () => {
   els.playPauseBtn.textContent = running ? 'Pause' : 'Play';
   updateReadout(running ? 'running' : 'paused');
 });
-
-els.resetBtn.addEventListener('click', () => {
-  reinitialize();
-});
-
-els.defaultPresetBtn.addEventListener('click', () => {
-  setPreset();
-  reinitialize();
-});
-
+els.resetBtn.addEventListener('click', reinitialize);
+els.defaultPresetBtn.addEventListener('click', () => { setPreset(); reinitialize(); });
+els.nearThresholdPresetBtn.addEventListener('click', () => { setNearThresholdPreset(); reinitialize(); });
 pairs.forEach(([rangeId, numberId]) => bindPair(rangeId, numberId));
 els.viewMode.addEventListener('input', reinitialize);
 
